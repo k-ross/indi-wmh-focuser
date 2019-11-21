@@ -37,7 +37,6 @@ extern "C"
 
 #define FOCUSNAMEF "Waveshare Motor HAT Focuser"
 
-#define MAX_STEPS 100000
 #define MICROSTEPPING 32 // must be set to match the state of the DIP switches on the board
 
 // We declare a pointer to indiWMHFocuser.
@@ -84,9 +83,10 @@ void ISSnoopDevice(XMLEle *root)
 IndiWMHFocuser::IndiWMHFocuser()
 {
 	msPerStep = 0;
+        reverse = false;
 	setVersion(VERSION_MAJOR, VERSION_MINOR);
 	setSupportedConnections(CONNECTION_NONE);
-	FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC);
+	FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE);
 	
 	DEV_ModuleInit();
 }
@@ -131,10 +131,6 @@ bool IndiWMHFocuser::initProperties()
 	IUFillNumber(&MotorSpeedN[0], "MOTOR_SPEED", "ms", "%0.0f", 0, 50, 1, 0);
 	IUFillNumberVector(&MotorSpeedNP, MotorSpeedN, 1, getDeviceName(), "MOTOR_CONFIG", "Delay Per Step", OPTIONS_TAB, IP_RW, 0, IPS_OK);
 
-	IUFillSwitch(&MotorDirS[0], "FORWARD", "Normal", ISS_ON);
-	IUFillSwitch(&MotorDirS[1], "REVERSE", "Reverse", ISS_OFF);
-	IUFillSwitchVector(&MotorDirSP, MotorDirS, 2, getDeviceName(), "MOTOR_DIR", "Motor Dir", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
-
 	IUFillNumber(&FocusBacklashN[0], "FOCUS_BACKLASH_VALUE", "Steps", "%0.0f", 0, 500, 1, 0);
 	IUFillNumberVector(&FocusBacklashNP, FocusBacklashN, 1, getDeviceName(), "FOCUS_BACKLASH", "Backlash", OPTIONS_TAB, IP_RW, 0, IPS_IDLE);
 
@@ -144,27 +140,6 @@ bool IndiWMHFocuser::initProperties()
 
 	IUFillSwitch(&FocusResetS[0], "FOCUS_RESET", "Reset", ISS_OFF);
 	IUFillSwitchVector(&FocusResetSP, FocusResetS, 1, getDeviceName(), "FOCUS_RESET", "Position Reset", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
-
-	// main tab
-	IUFillSwitch(&FocusMotionS[0], "FOCUS_INWARD", "Focus In", ISS_OFF);
-	IUFillSwitch(&FocusMotionS[1], "FOCUS_OUTWARD", "Focus Out", ISS_ON);
-	IUFillSwitchVector(&FocusMotionSP, FocusMotionS, 2, getDeviceName(), "FOCUS_MOTION", "Direction", MAIN_CONTROL_TAB, IP_RW, ISR_ATMOST1, 60, IPS_OK);
-
-	IUFillNumber(&FocusRelPosN[0], "FOCUS_RELATIVE_POSITION", "Steps", "%0.0f", 0, (int)MAX_STEPS / 10, (int)MAX_STEPS / 100, (int)MAX_STEPS / 100);
-	IUFillNumberVector(&FocusRelPosNP, FocusRelPosN, 1, getDeviceName(), "REL_FOCUS_POSITION", "Relative", MAIN_CONTROL_TAB, IP_RW, 60, IPS_OK);
-
-	IUFillNumber(&FocusAbsPosN[0], "FOCUS_ABSOLUTE_POSITION", "Steps", "%0.0f", 0, MAX_STEPS, (int)MAX_STEPS / 100, 0);
-	IUFillNumberVector(&FocusAbsPosNP, FocusAbsPosN, 1, getDeviceName(), "ABS_FOCUS_POSITION", "Absolute", MAIN_CONTROL_TAB, IP_RW, 0, IPS_OK);
-
-	IUFillNumber(&PresetN[0], "Preset 1", "", "%0.0f", 0, MAX_STEPS, (int)(MAX_STEPS / 100), 0);
-	IUFillNumber(&PresetN[1], "Preset 2", "", "%0.0f", 0, MAX_STEPS, (int)(MAX_STEPS / 100), 0);
-	IUFillNumber(&PresetN[2], "Preset 3", "", "%0.0f", 0, MAX_STEPS, (int)(MAX_STEPS / 100), 0);
-	IUFillNumberVector(&PresetNP, PresetN, 3, getDeviceName(), "Presets", "Presets", "Presets", IP_RW, 0, IPS_IDLE);
-
-	IUFillSwitch(&PresetGotoS[0], "Preset 1", "Preset 1", ISS_OFF);
-	IUFillSwitch(&PresetGotoS[1], "Preset 2", "Preset 2", ISS_OFF);
-	IUFillSwitch(&PresetGotoS[2], "Preset 3", "Preset 3", ISS_OFF);
-	IUFillSwitchVector(&PresetGotoSP, PresetGotoS, 3, getDeviceName(), "Presets Goto", "Goto", MAIN_CONTROL_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
 
 	// set default values
 	dir = FOCUS_OUTWARD;
@@ -190,23 +165,15 @@ bool IndiWMHFocuser::updateProperties()
 
 	if (isConnected())
 	{
-		defineNumber(&FocusAbsPosNP);
-		defineNumber(&FocusRelPosNP);
-		defineSwitch(&FocusMotionSP);
 		defineSwitch(&FocusParkingSP);
 		defineSwitch(&FocusResetSP);
-		defineSwitch(&MotorDirSP);
 		defineNumber(&MotorSpeedNP);
 		defineNumber(&FocusBacklashNP);
 	}
 	else
 	{
-		deleteProperty(FocusAbsPosNP.name);
-		deleteProperty(FocusRelPosNP.name);
-		deleteProperty(FocusMotionSP.name);
 		deleteProperty(FocusParkingSP.name);
 		deleteProperty(FocusResetSP.name);
-		deleteProperty(MotorDirSP.name);
 		deleteProperty(MotorSpeedNP.name);
 		deleteProperty(FocusBacklashNP.name);
 	}
@@ -219,37 +186,6 @@ bool IndiWMHFocuser::ISNewNumber(const char *dev, const char *name, double value
 	// first we check if it's for our device
 	if (strcmp(dev, getDeviceName()) == 0)
 	{
-		// handle focus absolute position
-		if (!strcmp(name, FocusAbsPosNP.name))
-		{
-			int newPos = (int)values[0];
-			if (MoveAbsFocuser(newPos) == IPS_OK)
-			{
-				IUUpdateNumber(&FocusAbsPosNP, values, names, n);
-				FocusAbsPosNP.s = IPS_OK;
-				IDSetNumber(&FocusAbsPosNP, NULL);
-			}
-			return true;
-		}
-
-		// handle focus relative position
-		if (!strcmp(name, FocusRelPosNP.name))
-		{
-			IUUpdateNumber(&FocusRelPosNP, values, names, n);
-			FocusRelPosNP.s = IPS_OK;
-			IDSetNumber(&FocusRelPosNP, NULL);
-
-			//FOCUS_INWARD
-			if (FocusMotionS[0].s == ISS_ON)
-				MoveRelFocuser(FOCUS_INWARD, FocusRelPosN[0].value);
-
-			//FOCUS_OUTWARD
-			if (FocusMotionS[1].s == ISS_ON)
-				MoveRelFocuser(FOCUS_OUTWARD, FocusRelPosN[0].value);
-
-			return true;
-		}
-
 		// handle step delay
 		if (!strcmp(name, MotorSpeedNP.name))
 		{
@@ -280,31 +216,6 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
 	// first we check if it's for our device
 	if (!strcmp(dev, getDeviceName()))
 	{
-		// handle focus presets
-		if (!strcmp(name, PresetGotoSP.name))
-		{
-			IUUpdateSwitch(&PresetGotoSP, states, names, n);
-
-			//Preset 1
-			if (PresetGotoS[0].s == ISS_ON)
-				MoveAbsFocuser(PresetN[0].value);
-
-			//Preset 2
-			if (PresetGotoS[1].s == ISS_ON)
-				MoveAbsFocuser(PresetN[1].value);
-
-			//Preset 2
-			if (PresetGotoS[2].s == ISS_ON)
-				MoveAbsFocuser(PresetN[2].value);
-
-			PresetGotoS[0].s = ISS_OFF;
-			PresetGotoS[1].s = ISS_OFF;
-			PresetGotoS[2].s = ISS_OFF;
-			PresetGotoSP.s = IPS_OK;
-			IDSetSwitch(&PresetGotoSP, NULL);
-			return true;
-		}
-
 		// handle focus reset
 		if (!strcmp(name, FocusResetSP.name))
 		{
@@ -312,7 +223,7 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
 
 			if (FocusResetS[0].s == ISS_ON && FocusAbsPosN[0].value == FocusAbsPosN[0].min)
 			{
-				FocusAbsPosN[0].value = (int)MAX_STEPS / 100;
+				FocusAbsPosN[0].value = (int)FocusMaxPosN[0].value / 100;
 				IDSetNumber(&FocusAbsPosNP, NULL);
 				MoveAbsFocuser(0);
 			}
@@ -332,39 +243,6 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
 			IDSetSwitch(&FocusParkingSP, NULL);
 			return true;
 		}
-
-		// handle motor direction
-		if (!strcmp(name, MotorDirSP.name))
-		{
-			IUUpdateSwitch(&MotorDirSP, states, names, n);
-			MotorDirSP.s = IPS_BUSY;
-			IDSetSwitch(&MotorDirSP, NULL);
-			MotorDirSP.s = IPS_OK;
-			IDSetSwitch(&MotorDirSP, NULL);
-			return true;
-		}
-
-		// handle focus abort - TODO
-/*
-		if (!strcmp(name, AbortSP.name))
-		{
-			IUUpdateSwitch(&AbortSP, states, names, n);
-			if ( AbortFocuser() )
-			{
-				//FocusAbsPosNP.s = IPS_IDLE;
-				//IDSetNumber(&FocusAbsPosNP, NULL);
-				AbortS[0].s = ISS_OFF;
-				AbortSP.s = IPS_OK;
-			}
-			else
-			{
-				AbortSP.s = IPS_ALERT;
-			}
-
-			IDSetSwitch(&AbortSP, NULL);
-			return true;
-		}
-*/
 	}
 	return INDI::Focuser::ISNewSwitch(dev, name, states, names, n);
 }
@@ -374,27 +252,20 @@ bool IndiWMHFocuser::saveConfigItems(FILE *fp)
 	IUSaveConfigNumber(fp, &MotorSpeedNP);
 	IUSaveConfigNumber(fp, &FocusBacklashNP);
 	IUSaveConfigSwitch(fp, &FocusParkingSP);
-	IUSaveConfigSwitch(fp, &MotorDirSP);
 
 	if (FocusParkingS[0].s == ISS_ON)
 		IUSaveConfigNumber(fp, &FocusAbsPosNP);
 
-	return true;
+	return INDI::Focuser::saveConfigItems(fp);
 }
 
-IPState IndiWMHFocuser::MoveFocuser(FocusDirection direction, int duration)
+IPState IndiWMHFocuser::MoveRelFocuser(FocusDirection direction, uint32_t ticks)
 {
-	IDMessage(getDeviceName(), "Not implemented.");
-	return IPS_ALERT;
-}
-
-IPState IndiWMHFocuser::MoveRelFocuser(FocusDirection direction, int ticks)
-{
-	int targetTicks = FocusAbsPosN[0].value + (ticks * (direction == FOCUS_INWARD ? -1 : 1));
+	uint32_t targetTicks = FocusAbsPosN[0].value + ((int)ticks * (direction == FOCUS_INWARD ? -1 : 1));
 	return MoveAbsFocuser(targetTicks);
 }
 
-IPState IndiWMHFocuser::MoveAbsFocuser(int targetTicks)
+IPState IndiWMHFocuser::MoveAbsFocuser(uint32_t targetTicks)
 {
 	if (targetTicks < FocusAbsPosN[0].min || targetTicks > FocusAbsPosN[0].max)
 	{
@@ -419,12 +290,12 @@ IPState IndiWMHFocuser::MoveAbsFocuser(int targetTicks)
 	if (targetTicks > FocusAbsPosN[0].value)
 	{
 		dir = FOCUS_OUTWARD;
-		IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser is moving outward by %d steps", abs(targetTicks - (int)FocusAbsPosN[0].value));
+		IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser is moving outward by %u steps", abs((int)targetTicks - (int)FocusAbsPosN[0].value));
 	}
 	else
 	{
 		dir = FOCUS_INWARD;
-		IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser is moving inward by %d steps", abs(targetTicks - (int)FocusAbsPosN[0].value));
+		IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser is moving inward by %u steps", abs((int)targetTicks - (int)FocusAbsPosN[0].value));
 	}
 
 	// if direction changed do backlash adjustment - TO DO
@@ -435,7 +306,7 @@ IPState IndiWMHFocuser::MoveAbsFocuser(int targetTicks)
 	}
 
 	// process targetTicks
-	int ticks = abs(targetTicks - (int)FocusAbsPosN[0].value);
+	uint32_t ticks = (uint32_t) abs((int)targetTicks - (int)FocusAbsPosN[0].value);
 
 	// GO
 	StepperMotor(ticks, dir);
@@ -466,14 +337,19 @@ bool IndiWMHFocuser::SyncFocuser(uint32_t targetTicks)
 	return IPS_OK;
 }
 
-int IndiWMHFocuser::StepperMotor(int steps, FocusDirection direction)
+bool IndiWMHFocuser::ReverseFocuser(bool enabled)
 {
-	int value;
+	reverse = enabled;
+	return true;
+}
+
+int IndiWMHFocuser::StepperMotor(uint32_t steps, FocusDirection direction)
+{
 	int dir;
 
 	if (direction == FOCUS_OUTWARD)
 	{
-		if (MotorDirS[1].s == ISS_ON)
+		if (reverse)
 		{
 			//clockwise out
 			dir = FORWARD;
@@ -486,7 +362,7 @@ int IndiWMHFocuser::StepperMotor(int steps, FocusDirection direction)
 	}
 	else
 	{
-		if (MotorDirS[1].s == ISS_ON)
+		if (reverse)
 		{
 			//clockwise in
 			dir = BACKWARD;
@@ -504,11 +380,4 @@ int IndiWMHFocuser::StepperMotor(int steps, FocusDirection direction)
 	DRV8825_Stop();
 
 	return 0;
-}
-
-bool IndiWMHFocuser::AbortFocuser()
-{
-	// TODO
-	IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser aborted");
-	return true;
 }

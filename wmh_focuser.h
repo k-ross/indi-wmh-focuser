@@ -28,37 +28,38 @@ class IndiWMHFocuser : public INDI::Focuser
     private:
         ISwitch FocusResetS[1];
         ISwitchVectorProperty FocusResetSP;
-        ISwitch MotorDirS[2];
-        ISwitchVectorProperty MotorDirSP;
         ISwitch FocusParkingS[2];
         ISwitchVectorProperty FocusParkingSP;
-		INumber FocusBacklashN[1];
-		INumberVectorProperty FocusBacklashNP;
-		INumber MotorSpeedN[1];
-		INumberVectorProperty MotorSpeedNP;
+        INumber FocusBacklashN[1];
+        INumberVectorProperty FocusBacklashNP;
+        INumber MotorSpeedN[1];
+        INumberVectorProperty MotorSpeedNP;
+
     public:
         IndiWMHFocuser();
         virtual ~IndiWMHFocuser();
 
         const char *getDefaultName();
 
-        virtual bool Connect();
-        virtual bool Disconnect();
-        virtual bool initProperties();
-        virtual bool updateProperties();
-        virtual void ISGetProperties (const char *dev);
+        virtual bool Connect() override;
+        virtual bool Disconnect() override;
+        virtual bool initProperties() override;
+        virtual bool updateProperties() override;
+        virtual void ISGetProperties (const char *dev) override;
 
-        virtual bool ISNewNumber (const char *dev, const char *name, double values[], char *names[], int n);
-        virtual bool ISNewSwitch (const char *dev, const char *name, ISState *states, char *names[], int n);
-        virtual bool saveConfigItems(FILE *fp);
+        virtual bool ISNewNumber (const char *dev, const char *name, double values[], char *names[], int n) override;
+        virtual bool ISNewSwitch (const char *dev, const char *name, ISState *states, char *names[], int n) override;
+        virtual bool saveConfigItems(FILE *fp) override;
 
-		virtual IPState MoveFocuser(FocusDirection dir, int duration);
-		virtual IPState MoveAbsFocuser(int ticks);
-		virtual IPState MoveRelFocuser(FocusDirection dir, int ticks);
-		virtual int StepperMotor(int steps, FocusDirection dir);
-		virtual bool AbortFocuser();
-		virtual bool SyncFocuser(uint32_t targetTicks);
+        virtual IPState MoveAbsFocuser(uint32_t ticks) override;
+        virtual IPState MoveRelFocuser(FocusDirection dir, uint32_t ticks) override;
+        virtual bool SyncFocuser(uint32_t targetTicks) override;
+        virtual bool ReverseFocuser(bool enabled) override;
 
-		FocusDirection dir;
+        FocusDirection dir;
         int msPerStep;
+        bool reverse;
+
+    protected:
+        virtual int StepperMotor(uint32_t steps, FocusDirection dir);
 };
