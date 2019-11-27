@@ -3,7 +3,7 @@
 <devGroup group="Focusers">
         <device label="Waveshare Motor HAT Focuser">
                 <driver name="Waveshare Motor HAT Focuser">indi_wmh_focuser</driver>
-                <version>1.0</version>
+                <version>@indi-wmh-focuser_VERSION_MAJOR@.@indi-wmh-focuser_VERSION_MINOR@</version>
         </device>
 </devGroup>
 </driversList>
