@@ -30,10 +30,8 @@ extern "C"
 	#include "DRV8825.h"
 }
 
+#include "config.h"
 #include "wmh_focuser.h"
-
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 0
 
 #define FOCUSNAMEF "Waveshare Motor HAT Focuser"
 

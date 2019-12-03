@@ -1,0 +1,4 @@
+#pragma once
+
+#define VERSION_MAJOR @indi-wmh-focuser_VERSION_MAJOR@
+#define VERSION_MINOR @indi-wmh-focuser_VERSION_MINOR@
