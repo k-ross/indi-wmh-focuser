@@ -37,7 +37,7 @@ extern "C"
 
 #define FOCUSNAMEF "Waveshare Motor HAT Focuser"
 
-#define MICROSTEPPING 32 // must be set to match the state of the DIP switches on the board
+#define MICROSTEPPING 4 // must be set to match the state of the DIP switches on the board
 
 // We declare a pointer to indiWMHFocuser.
 std::unique_ptr<IndiWMHFocuser> indiWMHFocuser(new IndiWMHFocuser);
@@ -89,6 +89,9 @@ IndiWMHFocuser::IndiWMHFocuser()
 	FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE);
 	
 	DEV_ModuleInit();
+
+	DRV8825_SelectMotor(MOTOR1);
+	DRV8825_Stop();
 }
 
 IndiWMHFocuser::~IndiWMHFocuser()
