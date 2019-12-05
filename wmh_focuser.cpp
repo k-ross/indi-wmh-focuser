@@ -35,7 +35,7 @@ extern "C"
 
 #define FOCUSNAMEF "Waveshare Motor HAT Focuser"
 
-#define MICROSTEPPING 4 // must be set to match the state of the DIP switches on the board
+#define MICROSTEPPING 32 // must be set to match the state of the DIP switches on the board
 
 // We declare a pointer to indiWMHFocuser.
 std::unique_ptr<IndiWMHFocuser> indiWMHFocuser(new IndiWMHFocuser);
