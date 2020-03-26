@@ -81,7 +81,7 @@ void ISSnoopDevice(XMLEle *root)
 IndiWMHFocuser::IndiWMHFocuser()
 {
 	usPerStep = 0;
-        reverse = false;
+	reverse = false;
 	setVersion(VERSION_MAJOR, VERSION_MINOR);
 	setSupportedConnections(CONNECTION_NONE);
 	FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE);
@@ -129,7 +129,7 @@ bool IndiWMHFocuser::initProperties()
 	INDI::Focuser::initProperties();
 
 	// options tab
-	IUFillNumber(&MotorSpeedN[0], "MOTOR_SPEED", "us", "%0.0f", 0, 5000, 100, 0);
+	IUFillNumber(&MotorSpeedN[0], "MOTOR_SPEED", "us", "%0.0f", 0, 1000, 10, 0);
 	IUFillNumberVector(&MotorSpeedNP, MotorSpeedN, 1, getDeviceName(), "MOTOR_CONFIG", "Delay Per Step", OPTIONS_TAB, IP_RW, 0, IPS_OK);
 
 	IUFillNumber(&FocusBacklashN[0], "FOCUS_BACKLASH_VALUE", "Steps", "%0.0f", 0, 500, 1, 0);
