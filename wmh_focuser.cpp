@@ -80,7 +80,7 @@ void ISSnoopDevice(XMLEle *root)
 
 IndiWMHFocuser::IndiWMHFocuser()
 {
-	msPerStep = 0;
+	usPerStep = 0;
         reverse = false;
 	setVersion(VERSION_MAJOR, VERSION_MINOR);
 	setSupportedConnections(CONNECTION_NONE);
@@ -129,7 +129,7 @@ bool IndiWMHFocuser::initProperties()
 	INDI::Focuser::initProperties();
 
 	// options tab
-	IUFillNumber(&MotorSpeedN[0], "MOTOR_SPEED", "ms", "%0.0f", 0, 50, 1, 0);
+	IUFillNumber(&MotorSpeedN[0], "MOTOR_SPEED", "us", "%0.0f", 0, 5000, 100, 0);
 	IUFillNumberVector(&MotorSpeedNP, MotorSpeedN, 1, getDeviceName(), "MOTOR_CONFIG", "Delay Per Step", OPTIONS_TAB, IP_RW, 0, IPS_OK);
 
 	IUFillNumber(&FocusBacklashN[0], "FOCUS_BACKLASH_VALUE", "Steps", "%0.0f", 0, 500, 1, 0);
@@ -193,9 +193,9 @@ bool IndiWMHFocuser::ISNewNumber(const char *dev, const char *name, double value
 			IUUpdateNumber(&MotorSpeedNP, values, names, n);
 			MotorSpeedNP.s = IPS_BUSY;
 			IDSetNumber(&MotorSpeedNP, NULL);
-			msPerStep = (int)MotorSpeedN[0].value;
+			usPerStep = (int)MotorSpeedN[0].value;
 			MotorSpeedNP.s = IPS_OK;
-			IDSetNumber(&MotorSpeedNP, "Waveshare Motor HAT Focuser delay per step set to %d ms", (int)MotorSpeedN[0].value);
+			IDSetNumber(&MotorSpeedNP, "Waveshare Motor HAT Focuser delay per step set to %d us", (int)MotorSpeedN[0].value);
 			return true;
 		}
 
@@ -377,7 +377,7 @@ int IndiWMHFocuser::StepperMotor(uint32_t steps, FocusDirection direction)
 
 	DRV8825_SelectMotor(MOTOR1);
 	DRV8825_SetMicroStep(HARDWARD, "");
-	DRV8825_TurnStep(dir, (uint32_t) (steps * MICROSTEPPING), msPerStep);
+	DRV8825_TurnStep(dir, (uint32_t) (steps * MICROSTEPPING), usPerStep);
 	DRV8825_Stop();
 
 	return 0;

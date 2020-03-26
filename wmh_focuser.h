@@ -57,7 +57,7 @@ class IndiWMHFocuser : public INDI::Focuser
         virtual bool ReverseFocuser(bool enabled) override;
 
         FocusDirection dir;
-        int msPerStep;
+        int usPerStep;
         bool reverse;
 
     protected:

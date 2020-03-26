@@ -87,6 +87,5 @@ void DEV_Delay_ms(uint32_t xms)
  */
 void DEV_Delay_us(uint32_t xus)
 {
-    int j;
-    for(j=xus; j > 0; j--);
+    delayMicroseconds(xus);
 }

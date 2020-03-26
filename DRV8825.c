@@ -145,9 +145,9 @@ void DRV8825_TurnStep(UBYTE dir, uint32_t steps, UWORD stepdelay)
     DEBUG("turn %d steps\r\n", steps);
     for(i = 0; i < steps; i++) {
         DEV_Digital_Write(Motor.StepPin, 1);
-        DEV_Delay_ms(stepdelay);
+        DEV_Delay_us(stepdelay);
         DEV_Digital_Write(Motor.StepPin, 0);
-        DEV_Delay_ms(stepdelay);
+        DEV_Delay_us(stepdelay);
     }
 
 }
