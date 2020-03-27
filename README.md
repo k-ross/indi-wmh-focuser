@@ -39,3 +39,6 @@ Start your INDI server with Waveshare Motor HAT driver:
 Start KStars with Ekos, edit your profile (or create a new one), and select "Waveshare Motor HAT Focuser" in the Focuser dropdown. If you don't see Waveshare Motor HAT Focuser as an option, then you didn't copy the XML file to the right place, or you need to restart KStars after copying the XML file.
 
 Now you can enjoy autofocus!
+
+# Tuning
+On the options tab in the INDI control panel, is an option titled "Delay per step". Stepper motors will lose torque when you run them faster. This will allow you to slow it down, to get more torque. The default of 0 will run at full speed, but without a lot of torque. On my setup, I find values between 20 and 100 to work well. 
