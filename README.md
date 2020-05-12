@@ -14,11 +14,6 @@ If you built INDI from source, you can skip this step. Otherwise, you must insta
 sudo apt install libindi-dev
 ```
 
-We need wiringPi, so let's install it.
-```
-sudo apt install wiringpi
-```
-
 Okay, we're ready to get the source and build it.
 ```
 git clone https://github.com/k-ross/indi-wmh-focuser.git

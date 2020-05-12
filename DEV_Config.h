@@ -7,14 +7,14 @@
 *                and enhance portability
 *----------------
 * |	This version:   V1.0
-* | Date        :   2018-10-15
+* | Date        :   2018-09-03
 * | Info        :   Basic version
 *
 ******************************************************************************/
 #ifndef __DEV_CONFIG_H_
 #define __DEV_CONFIG_H_
 
-#include <wiringPi.h>
+#include "bcm2835.h"
 #include <stdint.h>
 
 /**
@@ -41,7 +41,7 @@
 #define M2_M1_PIN 22
 #define M2_M2_PIN 27
 
-#define DEV_Digital_Write(_pin, _value) digitalWrite(_pin, _value)
+#define DEV_Digital_Write(_pin, _value) bcm2835_gpio_write(_pin, _value)
 
 /*------------------------------------------------------------------------------------------------------*/
 

@@ -7,14 +7,15 @@
 *                and enhance portability
 *----------------
 * |	This version:   V1.0
-* | Date        :   2018-10-15
+* | Date        :   2018-09-03
 * | Info        :   Basic version
 *
 ******************************************************************************/
 #include "DEV_Config.h"
 #include "Debug.h"  //DEBUG()
 
-#include <wiringPi.h>
+#include "bcm2835.h"
+
 
 /**
  * Module Initialize, use BCM2835 library.
@@ -25,30 +26,28 @@
  */
 UBYTE DEV_ModuleInit(void)
 {
-    //1.wiringPiSetupGpio
-    //if(wiringPiSetup() < 0)//use wiringpi Pin number table
-    if(wiringPiSetupGpio() < 0) { //use BCM2835 Pin number table
-        printf(" set wiringPi lib failed	!!! \r\n");
+    if(!bcm2835_init()) {
+        DEBUG("bcm2835 init failed   !!! \r\n");
         return 1;
     } else {
-        printf(" set wiringPi lib success  !!! \r\n");
+        DEBUG("bcm2835 init success  !!! \r\n");
     }
     
     //motor 1 
-    pinMode(M1_ENABLE_PIN, OUTPUT);
-    pinMode(M1_DIR_PIN, OUTPUT);
-    pinMode(M1_STEP_PIN, OUTPUT);
-    pinMode(M1_M0_PIN, OUTPUT);
-    pinMode(M1_M1_PIN, OUTPUT);
-    pinMode(M1_M2_PIN, OUTPUT);
+    bcm2835_gpio_fsel(M1_ENABLE_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M1_DIR_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M1_STEP_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M1_M0_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M1_M1_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M1_M2_PIN, BCM2835_GPIO_FSEL_OUTP);
 
     //motor 2 
-    pinMode(M2_ENABLE_PIN, OUTPUT);
-    pinMode(M2_DIR_PIN, OUTPUT);
-    pinMode(M2_STEP_PIN, OUTPUT);
-    pinMode(M2_M0_PIN, OUTPUT);
-    pinMode(M2_M1_PIN, OUTPUT);
-    pinMode(M2_M2_PIN, OUTPUT);
+    bcm2835_gpio_fsel(M2_ENABLE_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M2_DIR_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M2_STEP_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M2_M0_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M2_M1_PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(M2_M2_PIN, BCM2835_GPIO_FSEL_OUTP);
 
     return 0;
 }
@@ -61,7 +60,7 @@ UBYTE DEV_ModuleInit(void)
  */
 void DEV_ModuleExit(void)
 {
-    // bcm2835_close();
+    bcm2835_close();
 }
 
 /**
@@ -74,7 +73,7 @@ void DEV_ModuleExit(void)
  */
 void DEV_Delay_ms(uint32_t xms)
 {
-    delay(xms);
+    bcm2835_delay(xms);
 }
 
 /**
@@ -87,5 +86,7 @@ void DEV_Delay_ms(uint32_t xms)
  */
 void DEV_Delay_us(uint32_t xus)
 {
-    delayMicroseconds(xus);
+//    int j;
+//    for(j=xus; j > 0; j--);
+    bcm2835_delayMicroseconds(xus);
 }

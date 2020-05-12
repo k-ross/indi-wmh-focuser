@@ -14,12 +14,10 @@ set(BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin")
 set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(INDI REQUIRED)
-find_package(WiringPi REQUIRED)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${INDI_INCLUDE_DIR})
-include_directories(${WIRINGPI_INCLUDE_DIR})
 
 configure_file(config.h.in config.h)
 configure_file(indi_wmh_focuser.xml.in indi_wmh_focuser.xml)
@@ -28,9 +26,10 @@ set(indi_wmh_focuser_SRCS
         wmh_focuser.cpp
 	DEV_Config.c
 	DRV8825.c
+	bcm2835.c
    )
 
 add_executable(indi_wmh_focuser ${indi_wmh_focuser_SRCS})
-target_link_libraries(indi_wmh_focuser indidriver ${WIRINGPI_LIBRARIES})
+target_link_libraries(indi_wmh_focuser indidriver)
 install(TARGETS indi_wmh_focuser RUNTIME DESTINATION bin)
 install(FILES "${PROJECT_BINARY_DIR}/indi_wmh_focuser.xml" DESTINATION ${INDI_DATA_DIR})
