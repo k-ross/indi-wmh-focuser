@@ -11,6 +11,10 @@
 * | Info        :   Basic version
 *
 ******************************************************************************/
+#include <chrono>
+
+extern "C"
+{
 #include "DEV_Config.h"
 #include "Debug.h"  //DEBUG()
 
@@ -86,7 +90,16 @@ void DEV_Delay_ms(uint32_t xms)
  */
 void DEV_Delay_us(uint32_t xus)
 {
-//    int j;
-//    for(j=xus; j > 0; j--);
-    bcm2835_delayMicroseconds(xus);
+    if (xus == 0)
+        return;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for(;;)
+    {
+       	auto later = std::chrono::high_resolution_clock::now();
+        auto micros = std::chrono::duration_cast<std::chrono::microseconds>(later - start);
+        if (micros.count() >= xus)
+            break;
+    }
+}
 }

@@ -24,7 +24,7 @@ configure_file(indi_wmh_focuser.xml.in indi_wmh_focuser.xml)
 
 set(indi_wmh_focuser_SRCS
         wmh_focuser.cpp
-	DEV_Config.c
+	DEV_Config.cpp
 	DRV8825.c
 	bcm2835.c
    )
