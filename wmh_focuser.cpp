@@ -300,10 +300,12 @@ IPState IndiWMHFocuser::MoveAbsFocuser(uint32_t targetTicks)
 	}
 
 	// if direction changed do backlash adjustment - TO DO
-	if (FocusBacklashN[0].value != 0 && lastdir != dir && FocusAbsPosN[0].value != 0)
+	if (FocusBacklashN[0].value != 0 && dir == FOCUS_OUTWARD)
 	{
 		IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser backlash compensation by %d steps...", (int)FocusBacklashN[0].value);
-		StepperMotor(FocusBacklashN[0].value, dir);
+		StepperMotor(FocusBacklashN[0].value, FOCUS_OUTWARD);
+		delay(100);
+		StepperMotor(FocusBacklashN[0].value, FOCUS_INWARD);
 	}
 
 	// process targetTicks
