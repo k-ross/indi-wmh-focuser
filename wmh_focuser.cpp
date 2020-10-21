@@ -284,9 +284,6 @@ IPState IndiWMHFocuser::MoveAbsFocuser(uint32_t targetTicks)
 	FocusAbsPosNP.s = IPS_BUSY;
 	IDSetNumber(&FocusAbsPosNP, NULL);
 
-	// check last motion direction for backlash triggering
-	FocusDirection lastdir = dir;
-
 	// set direction
 	if (targetTicks > FocusAbsPosN[0].value)
 	{
