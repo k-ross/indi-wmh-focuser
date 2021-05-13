@@ -20,7 +20,7 @@ git clone https://github.com/k-ross/indi-wmh-focuser.git
 cd indi-wmh-focuser
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 sudo make install
 ```
@@ -36,4 +36,4 @@ Start KStars with Ekos, edit your profile (or create a new one), and select "Wav
 Now you can enjoy autofocus!
 
 # Tuning
-On the options tab in the INDI control panel, is an option titled "Delay per step". Stepper motors will lose torque when you run them faster. This will allow you to slow it down, to get more torque. The default of 0 will run at full speed, but without a lot of torque. On my setup, I find values between 20 and 100 to work well. 
+On the options tab in the INDI control panel, is an option titled "Delay per step". Stepper motors will lose torque when you run them faster. This will allow you to slow it down, to get more torque. The default of 0 will run at full speed, but without a lot of torque. On my setup, I find 200 to work well. 
