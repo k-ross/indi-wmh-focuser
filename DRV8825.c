@@ -61,6 +61,20 @@ void DRV8825_SelectMotor(UBYTE name)
     }
 }
 
+void DRV8825_Start(UBYTE dir)
+{
+    Motor.Dir = dir;
+    if(dir == FORWARD) {
+        DEBUG("motor %d formward\r\n", Motor.Name);
+        DEV_Digital_Write(Motor.EnablePin, 0);
+        DEV_Digital_Write(Motor.DirPin, 0);
+    } else if(dir == BACKWARD) {
+        DEBUG("motor %d backmward\r\n", Motor.Name);
+        DEV_Digital_Write(Motor.EnablePin, 0);
+        DEV_Digital_Write(Motor.DirPin, 1);
+    }
+}
+
 /**
  * The motor stops rotating and the driver chip is disabled.
  *
@@ -150,4 +164,12 @@ void DRV8825_TurnStep(UBYTE dir, uint32_t steps, UWORD stepdelay)
         DEV_Delay_us(stepdelay);
     }
 
+}
+
+void DRV8825_SingleStep(UWORD stepdelay)
+{
+    DEV_Digital_Write(Motor.StepPin, 1);
+    DEV_Delay_us(stepdelay);
+    DEV_Digital_Write(Motor.StepPin, 0);
+    DEV_Delay_us(stepdelay);
 }

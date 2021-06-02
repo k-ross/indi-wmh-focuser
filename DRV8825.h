@@ -42,7 +42,9 @@ typedef struct {
 } MOTOR;
 
 void DRV8825_SelectMotor(UBYTE name);
+void DRV8825_Start(UBYTE dir);
 void DRV8825_Stop(void);
 void DRV8825_SetMicroStep(char mode, const char *stepformat);
 void DRV8825_TurnStep(UBYTE dir, uint32_t steps, UWORD stepdelay);
+void DRV8825_SingleStep(UWORD stepdelay);
 #endif

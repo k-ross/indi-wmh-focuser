@@ -35,7 +35,7 @@ set(indi_wmh_focuser_SRCS
    )
 
 add_executable(indi_wmh_focuser ${indi_wmh_focuser_SRCS})
-target_link_libraries(indi_wmh_focuser indidriver)
+target_link_libraries(indi_wmh_focuser indidriver pthread)
 install(TARGETS indi_wmh_focuser RUNTIME DESTINATION bin
     PERMISSIONS ${PROGRAM_PERMISSIONS_DEFAULT} SETUID)
 install(FILES "${PROJECT_BINARY_DIR}/indi_wmh_focuser.xml" DESTINATION ${INDI_DATA_DIR})

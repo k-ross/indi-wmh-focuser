@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <thread>
 #include <indifocuser.h>
 
 class IndiWMHFocuser : public INDI::Focuser
@@ -34,6 +35,16 @@ class IndiWMHFocuser : public INDI::Focuser
         INumberVectorProperty FocusBacklashNP;
         INumber MotorSpeedN[1];
         INumberVectorProperty MotorSpeedNP;
+        
+        FocusDirection _dir;
+        int _usPerStep;
+        bool _reverse;
+
+        volatile bool _abort;
+        std::thread _motionThread;
+
+        bool _gotoAbsolute(uint32_t targetTicks);
+        int StepperMotor(uint32_t steps, FocusDirection dir);
 
     public:
         IndiWMHFocuser();
@@ -55,11 +66,5 @@ class IndiWMHFocuser : public INDI::Focuser
         virtual IPState MoveRelFocuser(FocusDirection dir, uint32_t ticks) override;
         virtual bool SyncFocuser(uint32_t targetTicks) override;
         virtual bool ReverseFocuser(bool enabled) override;
-
-        FocusDirection dir;
-        int usPerStep;
-        bool reverse;
-
-    protected:
-        virtual int StepperMotor(uint32_t steps, FocusDirection dir);
+        virtual bool AbortFocuser() override;
 };
