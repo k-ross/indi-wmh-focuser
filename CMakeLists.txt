@@ -4,7 +4,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-PROJECT(indi-wmh-focuser VERSION 1.0)
+PROJECT(indi-wmh-focuser VERSION 1.1)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
