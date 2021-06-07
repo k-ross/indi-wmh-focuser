@@ -319,6 +319,8 @@ bool IndiWMHFocuser::_gotoAbsolute(uint32_t targetTicks)
 	_abort = false;
 	_motionThread = std::thread([this](uint32_t targetPos)
 	{
+		FocusDirection lastDir = _dir;
+		
 		// set direction
 		if (targetPos > FocusAbsPosN[0].value)
 		{
@@ -332,12 +334,10 @@ bool IndiWMHFocuser::_gotoAbsolute(uint32_t targetTicks)
 		}
 
 		// if direction changed do backlash adjustment - TO DO
-		if (FocusBacklashN[0].value != 0 && _dir == FOCUS_OUTWARD)
+		if (FocusBacklashN[0].value != 0 && lastDir != _dir && FocusAbsPosN[0].value != 0)
 		{
 			IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser backlash compensation by %d steps...", (int)FocusBacklashN[0].value);
-			StepperMotor(FocusBacklashN[0].value, FOCUS_OUTWARD);
-			delay(100);
-			StepperMotor(FocusBacklashN[0].value, FOCUS_INWARD);
+			StepperMotor(FocusBacklashN[0].value, _dir);
 		}
 
 		uint32_t currentPos = FocusAbsPosN[0].value;
