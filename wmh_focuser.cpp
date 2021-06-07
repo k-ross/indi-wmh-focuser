@@ -342,9 +342,6 @@ bool IndiWMHFocuser::_gotoAbsolute(uint32_t targetTicks)
 
 		uint32_t currentPos = FocusAbsPosN[0].value;
 		
-		// process targetTicks
-		uint32_t ticks = (uint32_t) abs((int)targetPos - (int)FocusAbsPosN[0].value);
-
 		// GO
 		int dir = _dir == FOCUS_OUTWARD ? BACKWARD : FORWARD;
 		if (_reverse)
