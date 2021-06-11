@@ -23,6 +23,10 @@
 #include <string.h>
 #include <memory>
 #include <typeinfo>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 
 extern "C"
 {
@@ -151,6 +155,8 @@ bool IndiWMHFocuser::initProperties()
 	// set default values
 	_dir = FOCUS_OUTWARD;
 
+	FocusAbsPosN[0].value = _loadPosition();
+	
 	return true;
 }
 
@@ -284,6 +290,35 @@ bool IndiWMHFocuser::saveConfigItems(FILE *fp)
 	return INDI::Focuser::saveConfigItems(fp);
 }
 
+string IndiWMHFocuser::_getPositionFilename()
+{
+	return getenv("HOME") + string("/.indi/") + getDeviceName() + ".position";
+}
+
+uint32_t IndiWMHFocuser::_loadPosition()
+{
+	uint32_t pos = 0;
+	ifstream file(_getPositionFilename());
+	if (file.is_open())
+	{
+		
+		file >> pos;
+		file.close();
+	}
+	
+	return pos;
+}
+
+void IndiWMHFocuser::_savePosition(uint32_t pos)
+{
+	ofstream file(_getPositionFilename());
+	if (file.is_open())
+	{
+		file << pos << '\n';
+		file.close();
+	}
+}
+
 IPState IndiWMHFocuser::MoveAbsFocuser(uint32_t targetTicks)
 {
 	if (targetTicks == FocusAbsPosN[0].value)
@@ -391,6 +426,8 @@ bool IndiWMHFocuser::_gotoAbsolute(uint32_t targetTicks)
 		IDSetNumber(&FocusAbsPosNP, "Waveshare Motor HAT Focuser moved to position %d", (int)currentPos);
 		FocusRelPosNP.s = IPS_OK;
 		IDSetNumber(&FocusRelPosNP, nullptr);
+		
+		_savePosition(currentPos);
 	}, targetTicks);
 
 	return true;
@@ -410,6 +447,7 @@ bool IndiWMHFocuser::SyncFocuser(uint32_t targetTicks)
 	FocusAbsPosNP.s = IPS_OK;
 	IDSetNumber(&FocusAbsPosNP, NULL);
 	
+	_savePosition(targetTicks);
 	return IPS_OK;
 }
 

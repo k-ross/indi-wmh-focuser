@@ -45,6 +45,9 @@ class IndiWMHFocuser : public INDI::Focuser
         volatile bool _abort;
         std::thread _motionThread;
 
+        string _getPositionFilename();
+        uint32_t _loadPosition();
+        void _savePosition(uint32_t pos);
         bool _gotoAbsolute(uint32_t targetTicks);
         int StepperMotor(uint32_t steps, FocusDirection dir);
 
