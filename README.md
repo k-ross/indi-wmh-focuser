@@ -1,5 +1,5 @@
 # indi-wmh-focuser
-INDI focus driver for Waveshare Motor HAT stepper motor controller board. This allows controlling a stepper motor directly from a Raspberry Pi, with no external controller necessary. Additionally, the HAT can power the Raspberry Pi, so only a single 12V power connection will be needed, instead of a 12V and a 5V connection.
+INDI focus driver for Waveshare Stepper Motor HAT stepper motor controller board. This allows controlling a stepper motor directly from a Raspberry Pi, with no external controller necessary. Additionally, the HAT can power the Raspberry Pi, so only a single 12V power connection will be needed, instead of a 12V and a 5V connection.
 
 # Building
 This assumes you already have INDI installed.
