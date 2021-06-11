@@ -29,18 +29,24 @@
 #define HARDWARD 0
 #define SOFTWARD 1
 
+#define REV_ORIG 0
+#define REV_2_1  1
+
 typedef struct {
     UBYTE Name;
     char *MicroStep;
     UBYTE Dir;
     UBYTE EnablePin;
+    UBYTE EnableValue;
     UBYTE DirPin;
     UBYTE StepPin;
     UBYTE M0Pin;
     UBYTE M1Pin;
     UBYTE M2Pin;
+    UBYTE BoardRevision;
 } MOTOR;
 
+void DRV8825_SetBoardRevision(UBYTE rev);
 void DRV8825_SelectMotor(UBYTE name);
 void DRV8825_Start(UBYTE dir);
 void DRV8825_Stop(void);

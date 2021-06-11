@@ -30,6 +30,15 @@ char *microstepmode[6] =  {
     "1/32step",
 };
 
+void DRV8825_SetBoardRevision(UBYTE revision)
+{
+    Motor.BoardRevision = revision;
+    if (revision == REV_ORIG)
+        Motor.EnableValue = 0;
+    else
+        Motor.EnableValue = 1;
+}
+
 /**
  * Select motor
  *
@@ -66,11 +75,11 @@ void DRV8825_Start(UBYTE dir)
     Motor.Dir = dir;
     if(dir == FORWARD) {
         DEBUG("motor %d formward\r\n", Motor.Name);
-        DEV_Digital_Write(Motor.EnablePin, 0);
+        DEV_Digital_Write(Motor.EnablePin, Motor.EnableValue);
         DEV_Digital_Write(Motor.DirPin, 0);
     } else if(dir == BACKWARD) {
         DEBUG("motor %d backmward\r\n", Motor.Name);
-        DEV_Digital_Write(Motor.EnablePin, 0);
+        DEV_Digital_Write(Motor.EnablePin, Motor.EnableValue);
         DEV_Digital_Write(Motor.DirPin, 1);
     }
 }
@@ -81,7 +90,7 @@ void DRV8825_Start(UBYTE dir)
  */
 void DRV8825_Stop(void)
 {
-    DEV_Digital_Write(Motor.EnablePin, 1);
+    DEV_Digital_Write(Motor.EnablePin, 1 - Motor.EnableValue);
 }
 
 /**
@@ -139,18 +148,7 @@ void DRV8825_SetMicroStep(char mode, const char *stepformat)
  */
 void DRV8825_TurnStep(UBYTE dir, uint32_t steps, UWORD stepdelay)
 {
-    Motor.Dir = dir;
-    if(dir == FORWARD) {
-        DEBUG("motor %d formward\r\n", Motor.Name);
-        DEV_Digital_Write(Motor.EnablePin, 0);
-        DEV_Digital_Write(Motor.DirPin, 0);
-    } else if(dir == BACKWARD) {
-        DEBUG("motor %d backmward\r\n", Motor.Name);
-        DEV_Digital_Write(Motor.EnablePin, 0);
-        DEV_Digital_Write(Motor.DirPin, 1);
-    }    else {
-        DEV_Digital_Write(Motor.EnablePin, 1);
-    }
+    DRV8825_Start(dir);
 
     if(steps == 0)
         return;
@@ -163,7 +161,6 @@ void DRV8825_TurnStep(UBYTE dir, uint32_t steps, UWORD stepdelay)
         DEV_Digital_Write(Motor.StepPin, 0);
         DEV_Delay_us(stepdelay);
     }
-
 }
 
 void DRV8825_SingleStep(UWORD stepdelay)

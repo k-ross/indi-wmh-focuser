@@ -87,9 +87,6 @@ IndiWMHFocuser::IndiWMHFocuser()
 	FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE | FOCUSER_CAN_ABORT);
 	
 	DEV_ModuleInit();
-
-	DRV8825_SelectMotor(MOTOR1);
-	DRV8825_Stop();
 }
 
 IndiWMHFocuser::~IndiWMHFocuser()
@@ -147,6 +144,10 @@ bool IndiWMHFocuser::initProperties()
 	IUFillSwitch(&FocusResetS[0], "FOCUS_RESET", "Reset", ISS_OFF);
 	IUFillSwitchVector(&FocusResetSP, FocusResetS, 1, getDeviceName(), "FOCUS_RESET", "Position Reset", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
 
+	IUFillSwitch(&BoardRevisionS[0], "BOARD_REV_ORIG", "Original", ISS_ON);
+	IUFillSwitch(&BoardRevisionS[1], "BOARD_REV_2_1", "2.1", ISS_OFF);
+	IUFillSwitchVector(&BoardRevisionSP, BoardRevisionS, 2, getDeviceName(), "BOARD_REV", "Board Revision", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
+
 	// set default values
 	_dir = FOCUS_OUTWARD;
 
@@ -175,6 +176,7 @@ bool IndiWMHFocuser::updateProperties()
 		defineSwitch(&FocusResetSP);
 		defineNumber(&MotorSpeedNP);
 		defineNumber(&FocusBacklashNP);
+		defineSwitch(&BoardRevisionSP);
 	}
 	else
 	{
@@ -182,6 +184,7 @@ bool IndiWMHFocuser::updateProperties()
 		deleteProperty(FocusResetSP.name);
 		deleteProperty(MotorSpeedNP.name);
 		deleteProperty(FocusBacklashNP.name);
+		deleteProperty(BoardRevisionSP.name);
 	}
 
 	return true;
@@ -249,6 +252,21 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
 			IDSetSwitch(&FocusParkingSP, NULL);
 			return true;
 		}
+		
+		// board revision
+		if (!strcmp(name, BoardRevisionSP.name))
+		{
+			IUUpdateSwitch(&BoardRevisionSP, states, names, n);
+			
+			if (BoardRevisionS[0].s == ISS_ON)
+				DRV8825_SetBoardRevision(REV_ORIG);
+			else if (BoardRevisionS[1].s == ISS_ON)
+				DRV8825_SetBoardRevision(REV_2_1);
+			
+			BoardRevisionSP.s = IPS_OK;
+			IDSetSwitch(&BoardRevisionSP, NULL);
+			return true;
+		}
 	}
 	return INDI::Focuser::ISNewSwitch(dev, name, states, names, n);
 }
@@ -258,6 +276,7 @@ bool IndiWMHFocuser::saveConfigItems(FILE *fp)
 	IUSaveConfigNumber(fp, &MotorSpeedNP);
 	IUSaveConfigNumber(fp, &FocusBacklashNP);
 	IUSaveConfigSwitch(fp, &FocusParkingSP);
+	IUSaveConfigSwitch(fp, &BoardRevisionSP);
 
 	if (FocusParkingS[0].s == ISS_ON)
 		IUSaveConfigNumber(fp, &FocusAbsPosNP);

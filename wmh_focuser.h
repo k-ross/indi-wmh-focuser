@@ -31,6 +31,8 @@ class IndiWMHFocuser : public INDI::Focuser
         ISwitchVectorProperty FocusResetSP;
         ISwitch FocusParkingS[2];
         ISwitchVectorProperty FocusParkingSP;
+        ISwitch BoardRevisionS[2];
+        ISwitchVectorProperty BoardRevisionSP;
         INumber FocusBacklashN[1];
         INumberVectorProperty FocusBacklashNP;
         INumber MotorSpeedN[1];
