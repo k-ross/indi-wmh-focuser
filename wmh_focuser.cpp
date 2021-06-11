@@ -172,11 +172,11 @@ bool IndiWMHFocuser::updateProperties()
 
 	if (isConnected())
 	{
-		defineSwitch(&FocusParkingSP);
-		defineSwitch(&FocusResetSP);
-		defineNumber(&MotorSpeedNP);
-		defineNumber(&FocusBacklashNP);
-		defineSwitch(&BoardRevisionSP);
+		defineProperty(&FocusParkingSP);
+		defineProperty(&FocusResetSP);
+		defineProperty(&MotorSpeedNP);
+		defineProperty(&FocusBacklashNP);
+		defineProperty(&BoardRevisionSP);
 	}
 	else
 	{
