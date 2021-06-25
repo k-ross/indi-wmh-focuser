@@ -44,44 +44,6 @@ extern "C"
 // We declare a pointer to indiWMHFocuser.
 std::unique_ptr<IndiWMHFocuser> indiWMHFocuser(new IndiWMHFocuser);
 
-void ISPoll(void *p);
-void ISGetProperties(const char *dev)
-{
-	indiWMHFocuser->ISGetProperties(dev);
-}
-
-void ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int num)
-{
-	indiWMHFocuser->ISNewSwitch(dev, name, states, names, num);
-}
-
-void ISNewText(const char *dev, const char *name, char *texts[], char *names[], int num)
-{
-	indiWMHFocuser->ISNewText(dev, name, texts, names, num);
-}
-
-void ISNewNumber(const char *dev, const char *name, double values[], char *names[], int num)
-{
-	indiWMHFocuser->ISNewNumber(dev, name, values, names, num);
-}
-
-void ISNewBLOB(const char *dev, const char *name, int sizes[], int blobsizes[], char *blobs[], char *formats[], char *names[], int n)
-{
-	INDI_UNUSED(dev);
-	INDI_UNUSED(name);
-	INDI_UNUSED(sizes);
-	INDI_UNUSED(blobsizes);
-	INDI_UNUSED(blobs);
-	INDI_UNUSED(formats);
-	INDI_UNUSED(names);
-	INDI_UNUSED(n);
-}
-
-void ISSnoopDevice(XMLEle *root)
-{
-	indiWMHFocuser->ISSnoopDevice(root);
-}
-
 IndiWMHFocuser::IndiWMHFocuser()
 {
 	_usPerStep = 0;
@@ -89,7 +51,7 @@ IndiWMHFocuser::IndiWMHFocuser()
 	setVersion(VERSION_MAJOR, VERSION_MINOR);
 	setSupportedConnections(CONNECTION_NONE);
 	FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE | FOCUSER_CAN_ABORT);
-	
+
 	DEV_ModuleInit();
 }
 
@@ -151,7 +113,8 @@ bool IndiWMHFocuser::initProperties()
 	IUFillSwitch(&BoardRevisionS[0], "BOARD_REV_ORIG", "Original", ISS_ON);
 	IUFillSwitch(&BoardRevisionS[1], "BOARD_REV_2_1", "2.1", ISS_OFF);
 	IUFillSwitchVector(&BoardRevisionSP, BoardRevisionS, 2, getDeviceName(), "BOARD_REV", "Board Revision", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
-
+	registerProperty(&BoardRevisionSP);
+	
 	// set default values
 	_dir = FOCUS_OUTWARD;
 
@@ -167,13 +130,14 @@ void IndiWMHFocuser::ISGetProperties(const char *dev)
 
 	INDI::Focuser::ISGetProperties(dev);
 
+	loadConfig(true, "BOARD_REV");
+
 	// addDebugControl();
 	return;
 }
 
 bool IndiWMHFocuser::updateProperties()
 {
-
 	INDI::Focuser::updateProperties();
 
 	if (isConnected())
@@ -182,7 +146,6 @@ bool IndiWMHFocuser::updateProperties()
 		defineProperty(&FocusResetSP);
 		defineProperty(&MotorSpeedNP);
 		defineProperty(&FocusBacklashNP);
-		defineProperty(&BoardRevisionSP);
 	}
 	else
 	{
@@ -190,7 +153,6 @@ bool IndiWMHFocuser::updateProperties()
 		deleteProperty(FocusResetSP.name);
 		deleteProperty(MotorSpeedNP.name);
 		deleteProperty(FocusBacklashNP.name);
-		deleteProperty(BoardRevisionSP.name);
 	}
 
 	return true;
@@ -268,6 +230,9 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
 				DRV8825_SetBoardRevision(REV_ORIG);
 			else if (BoardRevisionS[1].s == ISS_ON)
 				DRV8825_SetBoardRevision(REV_2_1);
+			
+			DRV8825_SelectMotor(MOTOR1);
+			DRV8825_Stop();
 			
 			BoardRevisionSP.s = IPS_OK;
 			IDSetSwitch(&BoardRevisionSP, NULL);
