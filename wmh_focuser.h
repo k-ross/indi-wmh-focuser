@@ -22,6 +22,7 @@
 
 #include <thread>
 #include <indifocuser.h>
+#include "motor.h"
 
 class IndiWMHFocuser : public INDI::Focuser
 {
@@ -37,6 +38,8 @@ class IndiWMHFocuser : public INDI::Focuser
         INumberVectorProperty FocusBacklashNP;
         INumber MotorSpeedN[1];
         INumberVectorProperty MotorSpeedNP;
+
+        std::unique_ptr<Motor> _motor;
         
         FocusDirection _dir;
         int _usPerStep;
