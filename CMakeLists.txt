@@ -4,7 +4,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-PROJECT(indi-wmh-focuser VERSION 1.6)
+PROJECT(indi-wmh-focuser VERSION 1.7)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -29,9 +29,12 @@ configure_file(config.h.in config.h)
 configure_file(indi_wmh_focuser.xml.in indi_wmh_focuser.xml)
 
 if(ROCKPI)
+    pkg_search_module(MRAA REQUIRED mraa)
     set(indi_wmh_focuser_SRCS
         wmh_focuser.cpp
+        rockpimotor.cpp
     )
+    set(EXTRA_LIBS ${MRAA_LIBRARIES})
 else()
     pkg_search_module(GPIOD REQUIRED libgpiod)
     pkg_search_module(GPIODCXX REQUIRED libgpiodcxx)
@@ -43,7 +46,7 @@ else()
 endif()
 
 add_executable(indi_wmh_focuser ${indi_wmh_focuser_SRCS})
-target_link_libraries(indi_wmh_focuser indidriver pthread ${EXTRA_LIBS})
+target_link_libraries(indi_wmh_focuser ${INDI_LIBRARIES} pthread ${EXTRA_LIBS})
 install(TARGETS indi_wmh_focuser RUNTIME DESTINATION bin
     PERMISSIONS ${PROGRAM_PERMISSIONS_DEFAULT} SETUID)
 install(FILES "${PROJECT_BINARY_DIR}/indi_wmh_focuser.xml" DESTINATION ${INDI_DATA_DIR})

@@ -12,11 +12,11 @@ class RockPiMotor : public Motor
     std::unique_ptr<mraa::Gpio> _stepLine;
     
 public:
-	RockPiMotor(int enablePin, int directionPin, int stepPin);
-	
-	~RockPiMotor() override;
-	
-	void Enable(Direction dir) override;
-	void Disable() override;
-	void SingleStep(int stepDelayMicroseconds) override;
+    RockPiMotor(int enablePin, int directionPin, int stepPin);
+
+    ~RockPiMotor() override;
+
+    void Enable(Direction dir) override;
+    void Disable() override;
+    void SingleStep(int stepDelayMicroseconds) override;
 };

@@ -28,24 +28,21 @@
 
 using namespace std;
 
-extern "C"
-{
-    //#include "DEV_Config.h"
-    //#include "DRV8825.h"
-}
-
 #include "config.h"
 #include "wmh_focuser.h"
 
 #if ROCKPI
-#include "rockpimotor.h"
+    #include "rockpimotor.h"
+
+    #define M1_ENABLE_PIN 32
+    #define M1_DIR_PIN 33
+    #define M1_STEP_PIN 35
 #else
-#include "raspimotor.h"
+    #include "raspimotor.h"
 
-#define M1_ENABLE_PIN 12
-#define M1_DIR_PIN 13
-#define M1_STEP_PIN 19
-
+    #define M1_ENABLE_PIN 12
+    #define M1_DIR_PIN 13
+    #define M1_STEP_PIN 19
 #endif
 
 #define FOCUSNAMEF "Waveshare Motor HAT Focuser"
@@ -64,7 +61,7 @@ IndiWMHFocuser::IndiWMHFocuser()
     FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE | FOCUSER_CAN_ABORT);
 
 #if ROCKPI
-    #error Not yet implemented
+    _motor = make_unique<RockPiMotor>(M1_ENABLE_PIN, M1_DIR_PIN, M1_STEP_PIN);
 #else
     _motor = make_unique<RasPiMotor>(FOCUSNAMEF, M1_ENABLE_PIN, M1_DIR_PIN, M1_STEP_PIN);
 #endif
