@@ -2,4 +2,6 @@
 
 #define VERSION_MAJOR @indi-wmh-focuser_VERSION_MAJOR@
 #define VERSION_MINOR @indi-wmh-focuser_VERSION_MINOR@
-#define ROCKPI @ROCKPI@
+
+#cmakedefine ROCKPI @ROCKPI@
+#cmakedefine ROCKPI_ARMBIAN @ROCKPI_ARMBIAN@

@@ -32,16 +32,28 @@ using namespace std;
 #include "wmh_focuser.h"
 
 #if ROCKPI
-    #include "rockpimotor.h"
+    #include "mraamotor.h"
 
     #define M1_ENABLE_PIN 32
     #define M1_DIR_PIN 33
     #define M1_STEP_PIN 35
-#else
-    #include "raspimotor.h"
+#elif ROCKPI_ARMBIAN
+    #include "gpiomotor.h"
 
+    #define M1_ENABLE_CHIP "gpiochip3"
+    #define M1_ENABLE_PIN 16
+    #define M1_DIR_CHIP "gpiochip2"
+    #define M1_DIR_PIN 12
+    #define M1_STEP_CHIP "gpiochip4"
+    #define M1_STEP_PIN 5
+#else
+    #include "gpiomotor.h"
+
+    #define M1_ENABLE_CHIP "gpiochip0"
     #define M1_ENABLE_PIN 12
+    #define M1_DIR_CHIP "gpiochip0"
     #define M1_DIR_PIN 13
+    #define M1_STEP_CHIP "gpiochip0"
     #define M1_STEP_PIN 19
 #endif
 
@@ -61,9 +73,12 @@ IndiWMHFocuser::IndiWMHFocuser()
     FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_SYNC | FOCUSER_CAN_REVERSE | FOCUSER_CAN_ABORT);
 
 #if ROCKPI
-    _motor = make_unique<RockPiMotor>(M1_ENABLE_PIN, M1_DIR_PIN, M1_STEP_PIN);
+    _motor = make_unique<MraaMotor>(M1_ENABLE_PIN, M1_DIR_PIN, M1_STEP_PIN);
 #else
-    _motor = make_unique<RasPiMotor>(FOCUSNAMEF, M1_ENABLE_PIN, M1_DIR_PIN, M1_STEP_PIN);
+    _motor = make_unique<GpioMotor>(FOCUSNAMEF, 
+        M1_ENABLE_CHIP, M1_ENABLE_PIN, 
+        M1_DIR_CHIP,    M1_DIR_PIN,
+        M1_STEP_CHIP,   M1_STEP_PIN);
 #endif
 }
 

@@ -4,7 +4,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-PROJECT(indi-wmh-focuser VERSION 1.7)
+PROJECT(indi-wmh-focuser VERSION 1.8)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -32,7 +32,7 @@ if(ROCKPI)
     pkg_search_module(MRAA REQUIRED mraa)
     set(indi_wmh_focuser_SRCS
         wmh_focuser.cpp
-        rockpimotor.cpp
+        mraamotor.cpp
     )
     set(EXTRA_LIBS ${MRAA_LIBRARIES})
 else()
@@ -40,7 +40,7 @@ else()
     pkg_search_module(GPIODCXX REQUIRED libgpiodcxx)
     set(indi_wmh_focuser_SRCS
         wmh_focuser.cpp
-        raspimotor.cpp
+        gpiomotor.cpp
     )
     set(EXTRA_LIBS ${GPIODCXX_LIBRARIES})
 endif()

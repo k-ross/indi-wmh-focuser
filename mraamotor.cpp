@@ -1,6 +1,6 @@
-#include "rockpimotor.h"
+#include "mraamotor.h"
 
-RockPiMotor::RockPiMotor(int enablePin, int directionPin, int stepPin)
+MraaMotor::MraaMotor(int enablePin, int directionPin, int stepPin)
 {
     _enableLine =       std::make_unique<mraa::Gpio>(enablePin);
     _directionLine =    std::make_unique<mraa::Gpio>(directionPin);
@@ -11,11 +11,11 @@ RockPiMotor::RockPiMotor(int enablePin, int directionPin, int stepPin)
     _stepLine->dir(mraa::DIR_OUT);
 }
 	
-RockPiMotor::~RockPiMotor()
+MraaMotor::~MraaMotor()
 {
 }
 	
-void RockPiMotor::Enable(Direction dir)
+void MraaMotor::Enable(Direction dir)
 {
     if (_revision == BoardRevision::Rev21)
         _enableLine->write (1);
@@ -28,7 +28,7 @@ void RockPiMotor::Enable(Direction dir)
         _directionLine->write (1);
 }
 
-void RockPiMotor::Disable()
+void MraaMotor::Disable()
 {
     if (_revision == BoardRevision::Rev21)
         _enableLine->write (0);
@@ -36,7 +36,7 @@ void RockPiMotor::Disable()
         _enableLine->write (1);
 }
 
-void RockPiMotor::SingleStep(int stepDelayMicroseconds)
+void MraaMotor::SingleStep(int stepDelayMicroseconds)
 {
     _stepLine->write (1);
     _Delay (stepDelayMicroseconds);
