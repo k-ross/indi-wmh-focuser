@@ -8,7 +8,7 @@ This assumes you already have INDI installed.
 
 First, let's install some build tools, if you haven't already.
 ```
-sudo apt install build-essential cmake
+sudo apt install build-essential cmake libgpiod-dev
 ```
 
 If you built INDI from source, you can skip this step. Otherwise, you must install the INDI development libraries.
