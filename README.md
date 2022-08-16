@@ -1,7 +1,7 @@
 # indi-wmh-focuser
 INDI focus driver for Waveshare Stepper Motor HAT stepper motor controller board. This allows controlling a stepper motor directly from a Raspberry Pi, with no external controller necessary. Additionally, the HAT can power the Raspberry Pi, so only a single 12V power connection will be needed, instead of a 12V and a 5V connection.
 
-Now with Rock Pi 4 support! More SBC's with 40-pin GPIO headers will be supported in time (e.g. Odroid N2+)
+Now with Rock Pi 4 and ODROID-N2/N2+ support! More SBC's with compatible 40-pin GPIO headers will be supported in time.
 
 # Building
 This assumes you already have INDI installed.
@@ -40,6 +40,12 @@ sudo make install
 ### Rock Pi 4 running Armbian
 ```
 cmake -DCMAKE_INSTALL_PREFIX=/usr -DROCKPI_ARMBIAN=1 ..
+make
+sudo make install
+```
+### ODROID-N2 and ODROID-N2+ running Armbian
+```
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DODROID_N2=1 ..
 make
 sudo make install
 ```
