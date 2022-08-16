@@ -5,3 +5,4 @@
 
 #cmakedefine ROCKPI @ROCKPI@
 #cmakedefine ROCKPI_ARMBIAN @ROCKPI_ARMBIAN@
+#cmakedefine ODROID_N2 @ODROID_N2@

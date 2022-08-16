@@ -46,6 +46,15 @@ using namespace std;
     #define M1_DIR_PIN 12
     #define M1_STEP_CHIP "gpiochip4"
     #define M1_STEP_PIN 5
+#elif ODROID_N2
+    #include "gpiomotor.h"
+
+    #define M1_ENABLE_CHIP "gpiochip0"
+    #define M1_ENABLE_PIN 61
+    #define M1_DIR_CHIP "gpiochip0"
+    #define M1_DIR_PIN 70
+    #define M1_STEP_CHIP "gpiochip0"
+    #define M1_STEP_PIN 71
 #else
     #include "gpiomotor.h"
 
