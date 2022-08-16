@@ -22,22 +22,19 @@
 
 #include <thread>
 #include <indifocuser.h>
+#include <indipropertyswitch.h>
+#include <indipropertynumber.h>
 #include "motor.h"
 
 class IndiWMHFocuser : public INDI::Focuser
 {
     protected:
     private:
-        ISwitch FocusResetS[1];
-        ISwitchVectorProperty FocusResetSP;
-        ISwitch FocusParkingS[2];
-        ISwitchVectorProperty FocusParkingSP;
-        ISwitch BoardRevisionS[2];
-        ISwitchVectorProperty BoardRevisionSP;
-        INumber FocusBacklashN[1];
-        INumberVectorProperty FocusBacklashNP;
-        INumber MotorSpeedN[1];
-        INumberVectorProperty MotorSpeedNP;
+        INDI::PropertySwitch FocusResetSP    {2};
+        INDI::PropertySwitch FocusParkingSP  {2};
+        INDI::PropertySwitch BoardRevisionSP {2};
+        INDI::PropertyNumber FocusBacklashNP {1};
+        INDI::PropertyNumber MotorSpeedNP    {1};
 
         std::unique_ptr<Motor> _motor;
         

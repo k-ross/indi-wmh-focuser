@@ -105,7 +105,7 @@ bool IndiWMHFocuser::Connect()
 bool IndiWMHFocuser::Disconnect()
 {
     // park focuser
-    if (FocusParkingS[0].s == ISS_ON)
+    if (FocusParkingSP[0].s == ISS_ON)
     {
         IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser is parking...");
         MoveAbsFocuser(FocusAbsPosN[0].min);
@@ -123,22 +123,22 @@ bool IndiWMHFocuser::initProperties()
     INDI::Focuser::initProperties();
 
     // options tab
-    IUFillNumber(&MotorSpeedN[0], "MOTOR_SPEED", "us", "%0.0f", 0, 1000, 10, 0);
-    IUFillNumberVector(&MotorSpeedNP, MotorSpeedN, 1, getDeviceName(), "MOTOR_CONFIG", "Delay Per Step", OPTIONS_TAB, IP_RW, 0, IPS_OK);
+    MotorSpeedNP[0].fill("MOTOR_SPEED", "us", "%.f", 0, 1000, 10, 0);
+    MotorSpeedNP.fill(getDeviceName(), "MOTOR_CONFIG", "Delay Per Step", OPTIONS_TAB, IP_RW, 0, IPS_OK);
 
-    IUFillNumber(&FocusBacklashN[0], "FOCUS_BACKLASH_VALUE", "Steps", "%0.0f", 0, 500, 1, 0);
-    IUFillNumberVector(&FocusBacklashNP, FocusBacklashN, 1, getDeviceName(), "FOCUS_BACKLASH", "Backlash", OPTIONS_TAB, IP_RW, 0, IPS_IDLE);
+    FocusBacklashNP[0].fill("FOCUS_BACKLASH_VALUE", "Steps", "%.f", 0, 500, 1, 0);
+    FocusBacklashNP.fill(getDeviceName(), "FOCUS_BACKLASH", "Backlash", OPTIONS_TAB, IP_RW, 0, IPS_IDLE);
 
-    IUFillSwitch(&FocusParkingS[0], "FOCUS_PARKON", "Enable", ISS_ON);
-    IUFillSwitch(&FocusParkingS[1], "FOCUS_PARKOFF", "Disable", ISS_OFF);
-    IUFillSwitchVector(&FocusParkingSP, FocusParkingS, 2, getDeviceName(), "FOCUS_PARK", "Parking", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
+    FocusParkingSP[0].fill("FOCUS_PARKON", "Enable", ISS_ON);
+    FocusParkingSP[1].fill("FOCUS_PARKOFF", "Disable", ISS_OFF);
+    FocusParkingSP.fill(getDeviceName(), "FOCUS_PARK", "Parking", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
 
-    IUFillSwitch(&FocusResetS[0], "FOCUS_RESET", "Reset", ISS_OFF);
-    IUFillSwitchVector(&FocusResetSP, FocusResetS, 1, getDeviceName(), "FOCUS_RESET", "Position Reset", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
+    FocusResetSP[0].fill("FOCUS_RESET", "Reset", ISS_OFF);
+    FocusResetSP.fill(getDeviceName(), "FOCUS_RESET", "Position Reset", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
 
-    IUFillSwitch(&BoardRevisionS[0], "BOARD_REV_ORIG", "Original", ISS_ON);
-    IUFillSwitch(&BoardRevisionS[1], "BOARD_REV_2_1", "2.1", ISS_OFF);
-    IUFillSwitchVector(&BoardRevisionSP, BoardRevisionS, 2, getDeviceName(), "BOARD_REV", "Board Revision", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
+    BoardRevisionSP[0].fill("BOARD_REV_ORIG", "Original", ISS_ON);
+    BoardRevisionSP[1].fill("BOARD_REV_2_1", "2.1", ISS_OFF);
+    BoardRevisionSP.fill(getDeviceName(), "BOARD_REV", "Board Revision", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
     registerProperty(&BoardRevisionSP);
     
     // set default values
@@ -175,10 +175,10 @@ bool IndiWMHFocuser::updateProperties()
     }
     else
     {
-        deleteProperty(FocusParkingSP.name);
-        deleteProperty(FocusResetSP.name);
-        deleteProperty(MotorSpeedNP.name);
-        deleteProperty(FocusBacklashNP.name);
+        deleteProperty(FocusParkingSP.getName());
+        deleteProperty(FocusResetSP.getName());
+        deleteProperty(MotorSpeedNP.getName());
+        deleteProperty(FocusBacklashNP.getName());
     }
 
     return true;
@@ -190,23 +190,23 @@ bool IndiWMHFocuser::ISNewNumber(const char *dev, const char *name, double value
     if (strcmp(dev, getDeviceName()) == 0)
     {
         // handle step delay
-        if (!strcmp(name, MotorSpeedNP.name))
+        if (MotorSpeedNP.isNameMatch(name))
         {
-            IUUpdateNumber(&MotorSpeedNP, values, names, n);
-            MotorSpeedNP.s = IPS_BUSY;
-            IDSetNumber(&MotorSpeedNP, NULL);
-            _usPerStep = (int)MotorSpeedN[0].value;
-            MotorSpeedNP.s = IPS_OK;
-            IDSetNumber(&MotorSpeedNP, "Waveshare Motor HAT Focuser delay per step set to %d us", (int)MotorSpeedN[0].value);
+            MotorSpeedNP.update(values, names, n);
+            MotorSpeedNP.setState(IPS_BUSY);
+            MotorSpeedNP.apply();
+            _usPerStep = (int)MotorSpeedNP[0].getValue();
+            MotorSpeedNP.setState(IPS_OK);
+            MotorSpeedNP.apply("Waveshare Motor HAT Focuser delay per step set to %d us", (int)MotorSpeedNP[0].getValue());
             return true;
         }
 
         // handle focus backlash
-        if (!strcmp(name, FocusBacklashNP.name))
+        if (FocusBacklashNP.isNameMatch(name))
         {
-            IUUpdateNumber(&FocusBacklashNP, values, names, n);
-            FocusBacklashNP.s = IPS_OK;
-            IDSetNumber(&FocusBacklashNP, "Waveshare Motor HAT Focuser backlash set to %d steps", (int)FocusBacklashN[0].value);
+            FocusBacklashNP.update(values, names, n);
+            FocusBacklashNP.setState(IPS_OK);
+            FocusBacklashNP.apply("Waveshare Motor HAT Focuser backlash set to %d steps", (int)FocusBacklashNP[0].getValue());
             return true;
         }
 
@@ -220,47 +220,47 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
     if (!strcmp(dev, getDeviceName()))
     {
         // handle focus reset
-        if (!strcmp(name, FocusResetSP.name))
+        if (FocusResetSP.isNameMatch(name))
         {
-            IUUpdateSwitch(&FocusResetSP, states, names, n);
+            FocusResetSP.update(states, names, n);
 
-            if (FocusResetS[0].s == ISS_ON && FocusAbsPosN[0].value == FocusAbsPosN[0].min)
+            if (FocusResetSP[0].getState() == ISS_ON && FocusAbsPosN[0].value == FocusAbsPosN[0].min)
             {
                 FocusAbsPosN[0].value = (int)FocusMaxPosN[0].value / 100;
                 IDSetNumber(&FocusAbsPosNP, NULL);
                 MoveAbsFocuser(0);
             }
 
-            FocusResetS[0].s = ISS_OFF;
-            IDSetSwitch(&FocusResetSP, NULL);
+            FocusResetSP[0].setState(ISS_OFF);
+            FocusResetSP.apply();
             return true;
         }
 
         // handle parking mode
-        if (!strcmp(name, FocusParkingSP.name))
+        if (FocusParkingSP.isNameMatch(name))
         {
-            IUUpdateSwitch(&FocusParkingSP, states, names, n);
-            FocusParkingSP.s = IPS_BUSY;
-            IDSetSwitch(&FocusParkingSP, NULL);
-            FocusParkingSP.s = IPS_OK;
-            IDSetSwitch(&FocusParkingSP, NULL);
+            FocusParkingSP.update(states, names, n);
+            FocusParkingSP.setState(IPS_BUSY);
+            FocusParkingSP.apply();
+            FocusParkingSP.setState(IPS_OK);
+            FocusParkingSP.apply();
             return true;
         }
         
         // board revision
-        if (!strcmp(name, BoardRevisionSP.name))
+        if (BoardRevisionSP.isNameMatch(name))
         {
-            IUUpdateSwitch(&BoardRevisionSP, states, names, n);
+            BoardRevisionSP.update(states, names, n);
             
-            if (BoardRevisionS[0].s == ISS_ON)
+            if (BoardRevisionSP[0].getState() == ISS_ON)
                 _motor->SetBoardRevision(BoardRevision::Original);
-            else if (BoardRevisionS[1].s == ISS_ON)
+            else if (BoardRevisionSP[1].getState() == ISS_ON)
                 _motor->SetBoardRevision(BoardRevision::Rev21);
 
             _motor->Disable();
             
-            BoardRevisionSP.s = IPS_OK;
-            IDSetSwitch(&BoardRevisionSP, NULL);
+            BoardRevisionSP.setState(IPS_OK);
+            BoardRevisionSP.apply();
             return true;
         }
     }
@@ -274,7 +274,7 @@ bool IndiWMHFocuser::saveConfigItems(FILE *fp)
     IUSaveConfigSwitch(fp, &FocusParkingSP);
     IUSaveConfigSwitch(fp, &BoardRevisionSP);
 
-    if (FocusParkingS[0].s == ISS_ON)
+    if (FocusParkingSP[0].getState() == ISS_ON)
         IUSaveConfigNumber(fp, &FocusAbsPosNP);
 
     return INDI::Focuser::saveConfigItems(fp);
@@ -388,10 +388,10 @@ bool IndiWMHFocuser::_gotoAbsolute(uint32_t targetTicks)
         _motor->Enable(dir);
 
         // if direction changed do backlash adjustment - TO DO
-        if (FocusBacklashN[0].value != 0 && lastDir != _dir && FocusAbsPosN[0].value != 0)
+        if (FocusBacklashNP[0].getValue() != 0 && lastDir != _dir && FocusAbsPosN[0].value != 0)
         {
-            IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser backlash compensation by %d steps...", (int)FocusBacklashN[0].value);
-            for (int i = 0; i < FocusBacklashN[0].value * MICROSTEPPING; i++)
+            IDMessage(getDeviceName(), "Waveshare Motor HAT Focuser backlash compensation by %d steps...", (int)FocusBacklashNP[0].getValue());
+            for (int i = 0; i < FocusBacklashNP[0].getValue() * MICROSTEPPING; i++)
                 _motor->SingleStep(_usPerStep);
         }
 
