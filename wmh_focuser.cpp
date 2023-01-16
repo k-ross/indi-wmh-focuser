@@ -50,11 +50,17 @@ using namespace std;
     #include "gpiomotor.h"
 
     #define M1_ENABLE_CHIP "gpiochip0"
-    #define M1_ENABLE_PIN 61
+    #define M1_ENABLE_PIN 62
     #define M1_DIR_CHIP "gpiochip0"
-    #define M1_DIR_PIN 70
+    #define M1_DIR_PIN 66
     #define M1_STEP_CHIP "gpiochip0"
-    #define M1_STEP_PIN 71
+    #define M1_STEP_PIN 81
+    // #define M1_ENABLE_CHIP "gpiochip0"
+    // #define M1_ENABLE_PIN 61
+    // #define M1_DIR_CHIP "gpiochip0"
+    // #define M1_DIR_PIN 70
+    // #define M1_STEP_CHIP "gpiochip0"
+    // #define M1_STEP_PIN 71
 #else
     #include "gpiomotor.h"
 
@@ -148,7 +154,7 @@ bool IndiWMHFocuser::initProperties()
     BoardRevisionSP[0].fill("BOARD_REV_ORIG", "Original", ISS_ON);
     BoardRevisionSP[1].fill("BOARD_REV_2_1", "2.1", ISS_OFF);
     BoardRevisionSP.fill(getDeviceName(), "BOARD_REV", "Board Revision", OPTIONS_TAB, IP_RW, ISR_1OFMANY, 60, IPS_OK);
-    registerProperty(&BoardRevisionSP);
+    registerProperty(BoardRevisionSP);
     
     // set default values
     _dir = FOCUS_OUTWARD;
@@ -177,10 +183,10 @@ bool IndiWMHFocuser::updateProperties()
 
     if (isConnected())
     {
-        defineProperty(&FocusParkingSP);
-        defineProperty(&FocusResetSP);
-        defineProperty(&MotorSpeedNP);
-        defineProperty(&FocusBacklashNP);
+        defineProperty(FocusParkingSP);
+        defineProperty(FocusResetSP);
+        defineProperty(MotorSpeedNP);
+        defineProperty(FocusBacklashNP);
     }
     else
     {
@@ -278,10 +284,10 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
 bool IndiWMHFocuser::saveConfigItems(FILE *fp)
 {
     IUSaveConfigNumber(fp, &PresetNP);
-    IUSaveConfigNumber(fp, &MotorSpeedNP);
-    IUSaveConfigNumber(fp, &FocusBacklashNP);
-    IUSaveConfigSwitch(fp, &FocusParkingSP);
-    IUSaveConfigSwitch(fp, &BoardRevisionSP);
+    MotorSpeedNP.save(fp);
+    FocusBacklashNP.save(fp);
+    FocusParkingSP.save(fp);
+    BoardRevisionSP.save(fp);
 
     if (FocusParkingSP[0].getState() == ISS_ON)
         IUSaveConfigNumber(fp, &FocusAbsPosNP);
