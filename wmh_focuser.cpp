@@ -63,12 +63,12 @@ using namespace std;
     // #define M1_STEP_PIN 71
 #else
     #include "gpiomotor.h"
-
-    #define M1_ENABLE_CHIP "gpiochip0"
+    
+    #define M1_ENABLE_CHIP GpioMotor::getPiChip()
     #define M1_ENABLE_PIN 12
-    #define M1_DIR_CHIP "gpiochip0"
+    #define M1_DIR_CHIP GpioMotor::getPiChip()
     #define M1_DIR_PIN 13
-    #define M1_STEP_CHIP "gpiochip0"
+    #define M1_STEP_CHIP GpioMotor::getPiChip()
     #define M1_STEP_PIN 19
 #endif
 
