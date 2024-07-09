@@ -2,6 +2,7 @@
 
 #include <gpiod.hpp>
 #include <memory>
+#include <cstring>
 #include "motor.h"
 
 class GpioMotor : public Motor
@@ -24,4 +25,6 @@ public:
     void Enable(Direction dir) override;
     void Disable() override;
     void SingleStep(int stepDelayMicroseconds) override;
+    
+    static std::string getPiChip();
 };

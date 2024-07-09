@@ -58,3 +58,21 @@ void GpioMotor::SingleStep(int stepDelayMicroseconds)
     _stepLine.set_value (0);
     _Delay (stepDelayMicroseconds);
 }
+
+//figure out what the chip name should be for Raspberry Pi
+//for Pi5 it should be gpiochip4; otherwise it should be gpiochip0
+//the chip.label() should return something like 'pinctrl_xxx', so we'll use that to detect
+string GpioMotor::getPiChip()
+{
+    static std::string piChip;
+    if (piChip.empty()) {
+        piChip = "gpiochip0";
+        for (auto& it: ::gpiod::make_chip_iter()) {
+            string substr = "pinctrl";
+            if (strncmp(it.label().c_str(), substr.c_str(), substr.size())==0) {
+                piChip = it.name();
+            }
+        }
+    }
+    return piChip;
+}
