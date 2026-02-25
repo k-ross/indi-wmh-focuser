@@ -36,8 +36,9 @@ if(ROCKPI)
     )
     set(EXTRA_LIBS ${MRAA_LIBRARIES})
 else()
-    pkg_search_module(GPIOD REQUIRED libgpiod)
-    pkg_search_module(GPIODCXX REQUIRED libgpiodcxx)
+    pkg_check_modules(GPIOD REQUIRED libgpiod>=2.0)
+    pkg_check_modules(GPIODCXX REQUIRED libgpiodcxx>=2.0)
+    include_directories(${GPIODCXX_INCLUDE_DIRS})
     set(indi_wmh_focuser_SRCS
         wmh_focuser.cpp
         gpiomotor.cpp

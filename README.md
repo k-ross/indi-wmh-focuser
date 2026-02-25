@@ -11,6 +11,12 @@ First, let's install some build tools, if you haven't already.
 sudo apt install build-essential cmake libgpiod-dev
 ```
 
+**Note:** This project requires **libgpiod v2.2+** (available in Debian Trixie and later). The user running `indiserver` needs access to `/dev/gpiochip*` devices. On most distributions, add your user to the `gpio` group:
+```
+sudo usermod -aG gpio $USER
+```
+Then log out and back in for the group change to take effect.
+
 If you built INDI from source, you can skip this step. Otherwise, you must install the INDI development libraries.
 ```
 sudo apt install libindi-dev
