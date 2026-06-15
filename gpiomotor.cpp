@@ -1,76 +1,111 @@
 #include "gpiomotor.h"
+#include <iostream>
 
 using namespace std;
 
-GpioMotor::GpioMotor(const string& consumer, 
-        const string& enableChip, int enablePin, 
-        const string& directionChip, int directionPin, 
+filesystem::path GpioMotor::chipNameToPath(const string& name)
+{
+    if (!name.empty() && name[0] == '/')
+        return filesystem::path(name);
+    return filesystem::path("/dev") / name;
+}
+
+gpiod::line_request GpioMotor::requestOutputLine(
+    const string& chipName, int pin, const string& consumer)
+{
+    gpiod::line_settings settings;
+    settings.set_direction(gpiod::line::direction::OUTPUT);
+
+    return gpiod::chip(chipNameToPath(chipName))
+        .prepare_request()
+        .set_consumer(consumer)
+        .add_line_settings(gpiod::line::offset(pin), settings)
+        .do_request();
+}
+
+GpioMotor::GpioMotor(const string& consumer,
+        const string& enableChip, int enablePin,
+        const string& directionChip, int directionPin,
         const string& stepChip, int stepPin)
+    : _enablePin(enablePin), _directionPin(directionPin), _stepPin(stepPin)
 {
-    _enableChip.open(enableChip);
-    _directionChip.open(directionChip);
-    _stepChip.open(stepChip);
+    try {
+        _enableRequest.emplace(requestOutputLine(enableChip, enablePin, consumer));
+    } catch (const exception& e) {
+        cerr << "GpioMotor: failed to request enable line (chip="
+             << enableChip << " pin=" << enablePin << "): " << e.what() << endl;
+    }
 
-    if (_enableChip)    _enableLine     = _enableChip.get_line(enablePin);
-    if (_directionChip) _directionLine  = _directionChip.get_line(directionPin);
-    if (_stepChip)      _stepLine       = _stepChip.get_line(stepPin);
+    try {
+        _directionRequest.emplace(requestOutputLine(directionChip, directionPin, consumer));
+    } catch (const exception& e) {
+        cerr << "GpioMotor: failed to request direction line (chip="
+             << directionChip << " pin=" << directionPin << "): " << e.what() << endl;
+    }
 
-    gpiod::line_request request
-    {
-        .consumer = consumer,
-        .request_type = gpiod::line_request::DIRECTION_OUTPUT
-    };
-
-    if (_enableLine)    _enableLine.request(request);
-    if (_directionLine) _directionLine.request(request);
-    if (_stepLine)      _stepLine.request(request);
+    try {
+        _stepRequest.emplace(requestOutputLine(stepChip, stepPin, consumer));
+    } catch (const exception& e) {
+        cerr << "GpioMotor: failed to request step line (chip="
+             << stepChip << " pin=" << stepPin << "): " << e.what() << endl;
+    }
 }
-	
-GpioMotor::~GpioMotor()
-{
-}
-	
+
+GpioMotor::~GpioMotor() = default;
+
 void GpioMotor::Enable(Direction dir)
 {
-    if (_revision == BoardRevision::Rev21)
-        _enableLine.set_value (1);
-    else
-        _enableLine.set_value (0);
-        
-    if (dir == Direction::Forward)
-        _directionLine.set_value (0);
-    else
-        _directionLine.set_value (1);
+    if (_enableRequest) {
+        if (_revision == BoardRevision::Rev21)
+            _enableRequest->set_value(_enablePin, gpiod::line::value::ACTIVE);
+        else
+            _enableRequest->set_value(_enablePin, gpiod::line::value::INACTIVE);
+    }
+
+    if (_directionRequest) {
+        if (dir == Direction::Forward)
+            _directionRequest->set_value(_directionPin, gpiod::line::value::INACTIVE);
+        else
+            _directionRequest->set_value(_directionPin, gpiod::line::value::ACTIVE);
+    }
 }
 
 void GpioMotor::Disable()
 {
-    if (_revision == BoardRevision::Rev21)
-        _enableLine.set_value (0);
-    else
-        _enableLine.set_value (1);
+    if (_enableRequest) {
+        if (_revision == BoardRevision::Rev21)
+            _enableRequest->set_value(_enablePin, gpiod::line::value::INACTIVE);
+        else
+            _enableRequest->set_value(_enablePin, gpiod::line::value::ACTIVE);
+    }
 }
 
 void GpioMotor::SingleStep(int stepDelayMicroseconds)
 {
-    _stepLine.set_value (1);
-    _Delay (stepDelayMicroseconds);
-    _stepLine.set_value (0);
-    _Delay (stepDelayMicroseconds);
+    if (_stepRequest) {
+        _stepRequest->set_value(_stepPin, gpiod::line::value::ACTIVE);
+        _Delay(stepDelayMicroseconds);
+        _stepRequest->set_value(_stepPin, gpiod::line::value::INACTIVE);
+        _Delay(stepDelayMicroseconds);
+    }
 }
 
-//figure out what the chip name should be for Raspberry Pi
-//for Pi5 it should be gpiochip4; otherwise it should be gpiochip0
-//the chip.label() should return something like 'pinctrl_xxx', so we'll use that to detect
+// Figure out what the chip name should be for Raspberry Pi.
+// For Pi5 it should be gpiochip4; otherwise it should be gpiochip0.
+// The chip label should return something like 'pinctrl_xxx', so we use that to detect.
 string GpioMotor::getPiChip()
 {
-    static std::string piChip;
+    static string piChip;
     if (piChip.empty()) {
         piChip = "gpiochip0";
-        for (auto& it: ::gpiod::make_chip_iter()) {
-            string substr = "pinctrl";
-            if (strncmp(it.label().c_str(), substr.c_str(), substr.size())==0) {
-                piChip = it.name();
+        for (const auto& entry : filesystem::directory_iterator("/dev/")) {
+            if (gpiod::is_gpiochip_device(entry.path())) {
+                gpiod::chip chip(entry.path());
+                auto info = chip.get_info();
+                string label = info.label();
+                if (label.rfind("pinctrl", 0) == 0) {
+                    piChip = info.name();
+                }
             }
         }
     }
