@@ -41,6 +41,7 @@ class IndiWMHFocuser : public INDI::Focuser
         FocusDirection _dir;
         int _usPerStep;
         bool _reverse;
+        bool _configLoaded = false;
 
         volatile bool _abort;
         std::thread _motionThread;

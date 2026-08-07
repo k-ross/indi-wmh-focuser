@@ -172,7 +172,16 @@ void IndiWMHFocuser::ISGetProperties(const char *dev)
 
     INDI::Focuser::ISGetProperties(dev);
 
-    loadConfig(true, "BOARD_REV");
+    // Load the saved board revision only once at startup. ISGetProperties is
+    // invoked every time any client connects, and reloading the config here
+    // re-dispatches BOARD_REV to ISNewSwitch, whose handler disables the
+    // motor — killing any move in progress while the position counter keeps
+    // running (the motion thread steps open-loop into a disabled driver).
+    if (!_configLoaded)
+    {
+        loadConfig(true, "BOARD_REV");
+        _configLoaded = true;
+    }
 
     // addDebugControl();
     return;
@@ -274,8 +283,13 @@ bool IndiWMHFocuser::ISNewSwitch(const char *dev, const char *name, ISState *sta
             else if (BoardRevisionSP[1].getState() == ISS_ON)
                 _motor->SetBoardRevision(BoardRevision::Rev21);
 
-            _motor->Disable();
-            
+            // Only disable the motor when no move is in progress; the motion
+            // thread disables it itself once the move completes. Disabling
+            // here mid-move silently de-energizes the motor while steps are
+            // still being counted.
+            if (FocusAbsPosNP.getState() != IPS_BUSY)
+                _motor->Disable();
+
             BoardRevisionSP.setState(IPS_OK);
             BoardRevisionSP.apply();
             return true;
